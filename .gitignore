@@ -1,0 +1,39 @@
+# Игнорировать папку сборки (Out-of-source build)
+out/
+build/
+[Bb]uild/
+[Xx]64/
+*[Dd]ebug/
+*[Rr]elease/
+
+# Игнорировать служебные файлы Visual Studio
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.opensdf
+*.sdf
+ipch/
+*.ipch
+
+# Игнорировать файлы и папки CMake
+CMakeFiles/
+CMakeCache.txt
+*.cmake
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+.ninja_deps
+.ninja_log
+build.ninja
+
+# Игнорировать артефакты компилятора и линкера
+*.obj
+*.exe
+*.ilk
+*.pdb
+*.lib
+*.dll
+*.exp
