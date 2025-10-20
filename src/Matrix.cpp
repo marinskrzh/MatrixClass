@@ -12,37 +12,35 @@ Matrix::Matrix() : rows(0), cols(0)
 }
 Matrix::Matrix(int rows, int cols) : rows(rows), cols(cols)
 {
-    matrix = new int*[rows]; // Выделение памяти под строки матрицы (каждая - тоже указатель)
+    matrix = new int*[rows];
 	for (int i = 0; i < rows; i++)
 	{
-		matrix[i] = new int [cols] {0}; // Выделение памяти под столбцы и иницализация их нулями
+		matrix[i] = new int [cols] {0};
 	}
 }
 
 Matrix::Matrix(std::initializer_list<std::initializer_list<int>> list) : rows(list.size()), cols(list.begin()->size())
 {
-	matrix = new int* [rows];// Выделение памяти под строки матрицы (каждая - тоже указатель)
+	matrix = new int* [rows];
 	int i = 0;
-	for (const auto& row : list) // Прохождение по каждой строке матрицы
+	for (const auto& row : list) 
 	{
-		matrix[i] = new int[cols]; // Выделение памяти под столбцы
+		matrix[i] = new int[cols];
 		int j = 0;
-		for (const auto& elem : row) // Прохождение по каждому элементу строки
-			matrix[i][j++] = elem; // Заполнение матрицы
+		for (const auto& elem : row)
+			matrix[i][j++] = elem;
 		i++;
 	}
 }
 
 void Matrix::CopyFrom(const Matrix& other)
 {
-	// Выделяем память под новую матрицу
 	matrix = new int* [rows];
 	for (int i = 0; i < rows; i++)
 	{
 		matrix[i] = new int[cols];
 	}
 
-	// Копируем элементы
 	for (int i = 0; i < rows; i++)
 	{
 		for (int j = 0; j < cols; j++)
@@ -156,7 +154,7 @@ bool Matrix::operator==(const Matrix& other) const
 {
 	if (this->cols != other.cols || this->rows != other.rows)
 		return false;
-	// Быстрая проверка перед полным сравнением
+
 	if (rows > 0 && cols > 0 && this->matrix[0][0] != other.matrix[0][0])
 		return false;
 
@@ -204,11 +202,11 @@ void Matrix::Print()
 	}
 }
 
-void Matrix::InitRandom()
+void Matrix::InitRandom() 
 {
 	random_device rd;
 	mt19937 gen(rd()); // генератор (Mersenne Twister)
-	uniform_int_distribution<int> dist(1, 100); // диапазон [1, 100]
+	uniform_int_distribution<int> dist(1, 10); // диапазон [1, 10]
 
 	for (int i = 0; i < rows; i++)
 	{
@@ -217,7 +215,7 @@ void Matrix::InitRandom()
 			matrix[i][j] = dist(gen);
 		}
 	}
-}
+}// сделать статический метод-фабрика
 
 bool Matrix::IsSquare() const
 {
@@ -234,6 +232,25 @@ bool Matrix::IsZero() const
 		}
 	}
 	return true;
+}
+Matrix Matrix::Identity(int rows, int cols) // Обработано на исключения
+{
+	
+	if (rows != cols)
+	{
+		throw std::invalid_argument("Error! Matrix must be square");
+	}
+	if (rows <= 0 || cols <= 0) 
+	{
+		throw std::invalid_argument("Dimensions must be positive");
+	}
+	Matrix result(rows, cols);
+	for (int i = 0; i < rows; i++)
+	{
+		result.matrix[i][i] = 1;
+	}
+	return result;
+	
 }
 Matrix Matrix::Power(int exponent) const
 {
@@ -258,52 +275,67 @@ Matrix Matrix::Power(int exponent) const
 	//	//return halfM * halfM;
 	//}
 }
+Matrix Matrix::Minor(int exclude_col) const
+{
+	if (exclude_col < 0 || exclude_col >= cols) 
+	{
+		throw std::out_of_range("Column index out of range in Minor");
+	}
+	if (rows <= 1 || cols <= 1) 
+	{
+		throw std::invalid_argument("Matrix too small for minor");
+	}
+	Matrix result(rows - 1, cols - 1);
+	
+	// Разложение по первой строке
+	int minor_i = 0;
+	for (size_t i = 1; i < rows ; i++)
+	{
+		int minor_j = 0;
+		for (size_t j = 0; j < cols ; j++)
+		{
+			if (j == exclude_col)
+				continue;
+			result.matrix[minor_i][minor_j] = matrix[i][j];
+			minor_j++;
+		}
+		minor_i++;
+	}
+	return result;
+}
 int Matrix::Determinant() const
 {
-	cout << "Метод еще не реализован" << endl;
-	return 0;
-	//if (!this->IsSquare())
-	//	throw std::logic_error("Determinant is defined only for square matrices!");
+	if (rows != cols)
+	{
+		throw std::invalid_argument("Error! Matrix must be square");
+	}
+	if (rows <= 0 || cols <= 0)
+	{
+		throw std::invalid_argument("Dimensions must be positive");
+	}
+	if (rows == 0) // Если матрица пустая
+	{
+		return 1;
+	}
+	if (rows == 1) // Если матрица 1х1
+	{
+		return matrix[0][0];
+	}
+	if (rows == 2) // Если матрица 2х2
+	{
+		return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+	}
+	
 
-	//if (this->IsSquare() && rows == 1)
-	//	return matrix[0][0];
-
-	//if (this->IsSquare() && rows == 2)
-	//	return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
-
-
-	//if (this->IsZero())
-	//	return 0;
-	//// все что ниже - бесконечная рекурсия. переделать когда реализую метод поиска соответствующего минора
-	//int det = 0;
-	//int sign = 1;
-
-	//	// Разложение по первой строке
-	//for (int j = 0; j < cols; j++) 
-	//{
-	//	// Создаем минор (подматрицу без 0-й строки и j-го столбца)
-	//	Matrix minor(rows - 1, cols - 1);
-
-	//	for (int i = 1; i < rows; i++) 
-	//	{
-	//		int minor_col = 0;
-	//		for (int k = 0; k < cols; k++) 
-	//		{
-	//			if (k == j) continue; // Пропускаем j-й столбец
-	//			minor(i - 1, minor_col) = matrix[i][k];
-	//			minor_col++;
-	//		}
-	//	}
-
-	//	// Рекурсивно вычисляем определитель минора
-	//	int minor_det = minor.Determinant();
-	//	det += sign * matrix[0][j] * minor_det;
-	//	sign = -sign; // Чередуем знаки
-
-	//		
-	//}
-	//	return det;
-
+	// Вычисление определителя по минорам рекурсивно по первой строке
+	int det = 0;
+	for (int j = 0; j < cols; j++)
+	{
+		Matrix minor = this->Minor(j);
+		int sign = (j % 2 == 0) ? 1 : -1;
+		det += sign * matrix[0][j] * minor.Determinant();
+	}
+	return det;
 }
 Matrix Matrix::Transpose()
 {

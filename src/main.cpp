@@ -7,10 +7,11 @@ using namespace std;
 int main()
 {
 	setlocale(LC_ALL, "Russian");
-	Matrix m(4, 4);
+	Matrix m(5, 5); 
 	m.InitRandom();
 	m.Print();
-	
+	cout << endl;
+	cout << m.Determinant() << endl;
 	
 	return 0;
 }
